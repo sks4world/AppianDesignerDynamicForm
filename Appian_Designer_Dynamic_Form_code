@@ -1,0 +1,52 @@
+/*Srikrishna, February/13/2020: What to expect: If Priority is 1, message is 'critical' in red color (no matter what the Due date is)
+If Due date is < 7 working days, message is 'critical' in red color (no matter what the priority is)
+If priority > 1 AND Due Date is > 7 days, then message is 'normal' in black color
+Changes happen by with() function using autorefresh
+There are hidden fields and button that capture intermediate values and test 
+Num of days is left in display for quick verifications*/
+
+load(
+  /*local!loadVariable: rand(),*/
+  /*local!typedText,*/
+  local!priority:1,
+  local!dueDate:now(),
+  local!numOfDays:abs(calworkdays(datetime(year(local!dueDate), Month(local!dueDate), day(local!dueDate)),datetime(year(today()), Month(today()), day(today())))),
+  local!msg: "Case status is Critical, check Due date and Priority",
+  local!msg1: "Case status is Normal",
+  /*local!flag: "std",*/
+  with(
+    local!numOfDays: abs(calworkdays(datetime(year(local!dueDate), Month(local!dueDate), day(local!dueDate)),datetime(year(today()), Month(today()), day(today())))),
+    {
+      /*a!textField(label: "load() Variable", readOnly: true, value: local!loadVariable),*/
+      /*a!textField(label: "with() Variable", readOnly: true, value: local!withVariable),*/
+      a!textField(label: "Priority", readOnly: true, value: local!priority),
+      a!dateField(label: "Due Date", readOnly: true, value: local!dueDate),
+      a!integerField(label: "Day", readOnly: true, value: day(local!dueDate), showWhen: 1=0),
+      a!integerField(label: "Month", readOnly: true, value: Month(local!dueDate), showWhen: 1=0),
+      a!integerField(label: "Year", readOnly: true, value: year(local!dueDate), showWhen: 1=0),
+      a!integerField(label: "Num of days", readOnly: true, value: abs(calworkdays(datetime(year(local!dueDate), Month(local!dueDate), day(local!dueDate)),datetime(year(today()), Month(today()), day(today())))), saveInto: local!numOfDays),
+      a!textField(label: "Enter Priority", value: local!priority, saveInto: local!priority),
+      a!dateField(label: "Enter Due Date", value: local!dueDate, saveInto: local!dueDate),
+      /*a!textField(label: "Try typing here", value: local!typedText, saveInto: local!typedText),*/
+      a!richTextDisplayField(
+        label: "Message", 
+        value: a!richTextItem(
+          /*text: if(local!priority > 1, if((days360(local!dueDate, today(),0)  > 7),  local!msg1, local!msg), local!msg), */
+          /*color: if(local!priority > 1, if((days360(local!dueDate,today(),0) > 7),  "STANDARD", "NEGATIVE"), "NEGATIVE"),*/
+          text: if(local!priority > 1, if(local!numOfDays>7,  local!msg1, local!msg), local!msg), 
+          color: if(local!priority > 1, if(local!numOfDays > 7,  "STANDARD", "NEGATIVE"), "NEGATIVE"),
+          showWhen: or(local!priority>1, (1))
+          )),
+      a!buttonLayout(
+        secondaryButtons: {
+          a!buttonWidget(
+            label: "Update Message",
+            value: abs(calworkdays(datetime(year(local!dueDate), Month(local!dueDate), day(local!dueDate)),datetime(year(today()), Month(today()), day(today())))),
+            saveInto: local!numOfDays,
+            showWhen: 1=0
+          )
+        }
+      )
+    }
+  )
+)
